@@ -63,6 +63,9 @@ int main(int argc, char **argv)
     sortPatternCenters(qr_center_cloud, qr_centers, "camera");
     sortPatternCenters(lidar_center_cloud, lidar_centers, "lidar");
 
+    validateTargetGeometry(qr_centers, params.delta_width_circles, params.delta_height_circles, "QR");
+    validateTargetGeometry(lidar_centers, params.delta_width_circles, params.delta_height_circles, "LiDAR");
+
     // 保存中间结果：排序后的 LiDAR 圆心和 QR 圆心
     saveTargetHoleCenters(lidar_centers, qr_centers, params);
 

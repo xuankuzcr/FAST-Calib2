@@ -91,6 +91,7 @@ public:
                     p.x = livox_custom_msg->points[i].x;
                     p.y = livox_custom_msg->points[i].y;
                     p.z = livox_custom_msg->points[i].z;
+                    p.intensity = static_cast<float>(livox_custom_msg->points[i].reflectivity);
                     // Livox 的 CustomPoint 有 line 字段（uint8 / uint16 视版本而定）
                     p.ring = static_cast<std::uint16_t>(livox_custom_msg->points[i].line);
                     cloud_input_->push_back(p);
@@ -103,9 +104,14 @@ public:
             {
                 // 优先判断是否有 ring 字段
                 bool has_ring = false;
+                bool has_intensity = false;
+                bool has_reflectivity = false;
                 for (const auto &f : pcl_msg->fields)
                 {
-                    if (f.name == "ring") { has_ring = true; break; }
+                    // if (f.name == "ring") { has_ring = true; break; }
+                    if (f.name == "ring") has_ring = true;
+                    if (f.name == "intensity") has_intensity = true;
+                    if (f.name == "reflectivity") has_reflectivity = true;
                 }
 
                 // 使用 iterator 安全读取
@@ -115,6 +121,7 @@ public:
 
                 // ring 可能不存在：不存在时用 0xFFFF 表示未知
                 std::unique_ptr<sensor_msgs::PointCloud2ConstIterator<std::uint16_t>> it_ring_ptr;
+                std::unique_ptr<sensor_msgs::PointCloud2ConstIterator<float>> it_intensity_ptr;
                 if (has_ring)
                 {
                     it_ring_ptr.reset(new sensor_msgs::PointCloud2ConstIterator<std::uint16_t>(*pcl_msg, "ring"));
@@ -123,6 +130,14 @@ public:
                 else
                 {
                     lidar_type_ = LiDARType::Solid;
+                }
+                if (has_intensity)
+                {
+                    it_intensity_ptr.reset(new sensor_msgs::PointCloud2ConstIterator<float>(*pcl_msg, "intensity"));
+                }
+                else if (has_reflectivity)
+                {
+                    it_intensity_ptr.reset(new sensor_msgs::PointCloud2ConstIterator<float>(*pcl_msg, "reflectivity"));
                 }
 
                 const size_t n = static_cast<size_t>(pcl_msg->width) * pcl_msg->height;
@@ -148,6 +163,15 @@ public:
                     else
                     {
                         p.ring = 0xFFFF; // 未知线号
+                    }
+                    if (it_intensity_ptr)
+                    {
+                        p.intensity = **it_intensity_ptr;
+                        ++(*it_intensity_ptr);
+                    }
+                    else
+                    {
+                        p.intensity = 0.0f;
                     }
 
                     cloud_input_->push_back(p);

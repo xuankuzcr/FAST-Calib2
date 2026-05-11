@@ -37,13 +37,14 @@ using namespace pcl;
 #define DEBUG 1
 #define GEOMETRY_TOLERANCE 0.08
 
-// ===== 自定义点类型：XYZ + ring =====
+// ===== 自定义点类型：XYZ + intensity + ring =====
 namespace Common 
 {
   struct Point
   {
-    PCL_ADD_POINT4D;            // quad-word XYZ + padding
-    std::uint16_t ring = 0;     // 线号（机械雷达/多线雷达）
+    PCL_ADD_POINT4D;
+    float intensity = 0.0f;      // LiDAR intensity / reflectivity
+    std::uint16_t ring = 0;      // 线号（机械雷达/多线雷达）
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   } EIGEN_ALIGN16;
 }
@@ -51,6 +52,7 @@ POINT_CLOUD_REGISTER_POINT_STRUCT(Common::Point,
   (float, x, x)
   (float, y, y)
   (float, z, z)
+  (float, intensity, intensity)
   (std::uint16_t, ring, ring)
 );
 
@@ -386,6 +388,69 @@ void sortPatternCenters(pcl::PointCloud<pcl::PointXYZ>::Ptr pc,
     }
   }
 }
+
+double distance3D(const pcl::PointXYZ& p1, const pcl::PointXYZ& p2) {
+  return std::sqrt(std::pow(p1.x - p2.x, 2) +
+                   std::pow(p1.y - p2.y, 2) +
+                   std::pow(p1.z - p2.z, 2));
+}
+
+void validateTargetGeometry(const pcl::PointCloud<pcl::PointXYZ>::Ptr& centers,
+                            double target_width,
+                            double target_height,
+                            const std::string& label)
+{
+  if (centers->size() != 4) {
+    std::cerr << "[Geometry][" << label << "] Need 4 centers, got "
+              << centers->size() << std::endl;
+    return;
+  }
+
+  double target_diagonal = std::sqrt(target_width * target_width +
+                                     target_height * target_height);
+
+  std::vector<double> target_distances = {
+    target_height, target_height,
+    target_width, target_width,
+    target_diagonal, target_diagonal
+  };
+
+  std::vector<double> measured_distances;
+  for (size_t i = 0; i < centers->size(); ++i) {
+    for (size_t j = i + 1; j < centers->size(); ++j) {
+      measured_distances.push_back(distance3D(centers->points[i],
+                                              centers->points[j]));
+    }
+  }
+
+  std::sort(measured_distances.begin(), measured_distances.end());
+
+  double max_error = 0.0;
+  double rmse = 0.0;
+
+  std::cout << "[Geometry][" << label << "] distance / error (mm): ";
+
+  for (size_t i = 0; i < measured_distances.size(); ++i) {
+    double error = measured_distances[i] - target_distances[i];
+    max_error = std::max(max_error, std::fabs(error));
+    rmse += error * error;
+
+    std::cout << measured_distances[i] * 1000.0
+              << " / " << error * 1000.0;
+
+    if (i + 1 < measured_distances.size()) {
+      std::cout << ", ";
+    }
+  }
+
+  rmse = std::sqrt(rmse / measured_distances.size());
+
+  std::cout << std::endl;
+  std::cout << "[Geometry][" << label << "] max error = "
+            << max_error * 1000.0 << " mm, RMSE = "
+            << rmse * 1000.0 << " mm" << std::endl;
+}
+
 
 class Square 
 {
