@@ -51,9 +51,15 @@
   marker_size: 0.20 # ArUco marker size (our test data uses 0.16m; adjust to match your marker size)
   delta_width_qr_center: 0.55 # Half the distance between the centers of two markers in the horizontal direction 
   delta_height_qr_center: 0.35 # Half the distance between the centers of two markers in the vertical direction
-  delta_width_circles: 0.5 # Distance between the centers of two circles in the horizontal direction
-  delta_height_circles: 0.4 # Distance between the centers of two circles in the vertical direction
-  circle_radius: 0.12 # Radius of the circle 
+  delta_width_circles: 0.5 # Distance between the centers of two annuli in the horizontal direction
+  delta_height_circles: 0.4 # Distance between the centers of two annuli in the vertical direction
+  circle_radius: 0.12 # Radius of the reflective annulus centerline
+  board_width: 1.4
+  board_height: 1.0
+  board_roi_margin: 0.08
+  board_roi_depth: 0.12
+  auto_roi_voxel_leaf: 0.01
+  annulus_voxel_leaf: 0.005
 
 # Distance filter
   # x_min: 3.0 # avia and mid360: 2.0 ouster: 1.5
@@ -77,6 +83,9 @@
   # y_max: 1.0
   # z_min: 0.0
   # z_max: 2.0
+
+  use_auto_lidar_roi: true
+
 # multi_scene_33
   x_min: 2.6
   x_max: 3.0
@@ -87,8 +96,8 @@
 
 # Input
   lidar_topic: "/livox/lidar" # /ouster/points /livox/lidar
-  bag_path: "$(find fast_calib)/calib_data/fast-calib2-data/mid.bag"
-  image_path: "$(find fast_calib)/calib_data/fast-calib2-data/mid.bmp"
+  bag_path: "$(find fast_calib)/calib_data/fast-calib2-data/right.bag"
+  image_path: "$(find fast_calib)/calib_data/fast-calib2-data/right.bmp"
 
 # Output
   output_path: "$(find fast_calib)/output"

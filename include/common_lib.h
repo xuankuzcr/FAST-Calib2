@@ -59,9 +59,12 @@ POINT_CLOUD_REGISTER_POINT_STRUCT(Common::Point,
 // 参数结构体
 struct Params {
   double x_min, x_max, y_min, y_max, z_min, z_max;
+  bool use_auto_lidar_roi;
   double fx, fy, cx, cy, k1, k2, p1, p2;
   double marker_size, delta_width_qr_center, delta_height_qr_center;
   double delta_width_circles, delta_height_circles, circle_radius;
+  double board_width, board_height, board_roi_margin, board_roi_depth;
+  double auto_roi_voxel_leaf, annulus_voxel_leaf;
   int min_detected_markers;
   string image_path;
   string bag_path;
@@ -87,10 +90,17 @@ Params loadParameters(ros::NodeHandle &nh) {
   nh.param("delta_height_circles", params.delta_height_circles, 0.4);
   nh.param("min_detected_markers", params.min_detected_markers, 3);
   nh.param("circle_radius", params.circle_radius, 0.12);
+  nh.param("board_width", params.board_width, 1.4);
+  nh.param("board_height", params.board_height, 1.0);
+  nh.param("board_roi_margin", params.board_roi_margin, 0.08);
+  nh.param("board_roi_depth", params.board_roi_depth, 0.12);
+  nh.param("auto_roi_voxel_leaf", params.auto_roi_voxel_leaf, 0.01);
+  nh.param("annulus_voxel_leaf", params.annulus_voxel_leaf, 0.005);
   nh.param("image_path", params.image_path, string("/home/chunran/calib_ws/src/fast_calib/data/image.png"));
   nh.param("bag_path", params.bag_path, string("/home/chunran/calib_ws/src/fast_calib/data/input.bag"));
   nh.param("lidar_topic", params.lidar_topic, string("/livox/lidar"));
   nh.param("output_path", params.output_path, string("/home/chunran/calib_ws/src/fast_calib/output"));
+  nh.param("use_auto_lidar_roi", params.use_auto_lidar_roi, false);
   nh.param("x_min", params.x_min, 1.5);
   nh.param("x_max", params.x_max, 3.0);
   nh.param("y_min", params.y_min, -1.5);
@@ -260,7 +270,7 @@ void saveTargetHoleCenters(const pcl::PointCloud<pcl::PointXYZ>::Ptr& lidar_cent
     }
     saveFile << std::endl;
     saveFile.close();
-    std::cout << BOLDGREEN << "[Record] Saved four pairs of circular hole centers to " << BOLDWHITE << saveDir << "circle_center_record.txt" << RESET << std::endl;
+    std::cout << BOLDGREEN << "[Record] Saved four pairs of target centers to " << BOLDWHITE << saveDir << "circle_center_record.txt" << RESET << std::endl;
 }
 
 void saveCalibrationResults(const Params& params, const Eigen::Matrix4f& transformation, 
