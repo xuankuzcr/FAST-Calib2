@@ -37,6 +37,14 @@ target_link_libraries(fast_calib
   ${OpenCV_LIBRARIES}
 )
 
+add_executable(lidar_center_test src/lidar_center_test.cpp)
+
+target_link_libraries(lidar_center_test
+  ${catkin_LIBRARIES}
+  ${PCL_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+)
+
 add_executable(multi_fast_calib src/multi_scene.cpp)
 target_link_libraries(multi_fast_calib
   ${catkin_LIBRARIES}

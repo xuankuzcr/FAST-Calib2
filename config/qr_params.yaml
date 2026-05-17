@@ -54,6 +54,7 @@
   delta_width_circles: 0.5 # Distance between the centers of two annuli in the horizontal direction
   delta_height_circles: 0.4 # Distance between the centers of two annuli in the vertical direction
   circle_radius: 0.12 # Radius of the reflective annulus centerline
+  annulus_half_width: 0.025 # Half width of annulus band: (outer radius - inner radius) / 2
   board_width: 1.4
   board_height: 1.0
   board_roi_margin: 0.08

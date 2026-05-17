@@ -62,7 +62,7 @@ struct Params {
   bool use_auto_lidar_roi;
   double fx, fy, cx, cy, k1, k2, p1, p2;
   double marker_size, delta_width_qr_center, delta_height_qr_center;
-  double delta_width_circles, delta_height_circles, circle_radius;
+  double delta_width_circles, delta_height_circles, circle_radius, annulus_half_width;
   double board_width, board_height, board_roi_margin, board_roi_depth;
   double auto_roi_voxel_leaf, annulus_voxel_leaf;
   int min_detected_markers;
@@ -90,6 +90,7 @@ Params loadParameters(ros::NodeHandle &nh) {
   nh.param("delta_height_circles", params.delta_height_circles, 0.4);
   nh.param("min_detected_markers", params.min_detected_markers, 3);
   nh.param("circle_radius", params.circle_radius, 0.12);
+  nh.param("annulus_half_width", params.annulus_half_width, 0.025);
   nh.param("board_width", params.board_width, 1.4);
   nh.param("board_height", params.board_height, 1.0);
   nh.param("board_roi_margin", params.board_roi_margin, 0.08);
@@ -110,6 +111,7 @@ Params loadParameters(ros::NodeHandle &nh) {
   return params;
 }
 
+// 计算两组等长点云之间的三维 RMSE
 double computeRMSE(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud1, 
                    const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud2) 
 {
@@ -146,6 +148,7 @@ void alignPointCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr &input_cloud,
   }
 }
 
+// 枚举从 N 个候选中选择 K 个的所有组合
 void comb(int N, int K, std::vector<std::vector<int>> &groups) {
   int upper_factorial = 1;
   int lower_factorial = 1;
@@ -178,6 +181,7 @@ void comb(int N, int K, std::vector<std::vector<int>> &groups) {
   assert(groups.size() == n_permutations);
 }
 
+// 将 LiDAR 点投影到图像平面并用图像像素颜色生成彩色点云
 void projectPointCloudToImage(const pcl::PointCloud<Common::Point>::Ptr& cloud,
   const Eigen::Matrix4f& transformation,
   const cv::Mat& cameraMatrix,
@@ -236,6 +240,7 @@ void projectPointCloudToImage(const pcl::PointCloud<Common::Point>::Ptr& cloud,
   }
 }
 
+// 记录一帧 LiDAR 圆心与 QR 圆心配对结果，便于离线检查
 void saveTargetHoleCenters(const pcl::PointCloud<pcl::PointXYZ>::Ptr& lidar_centers,
                       const pcl::PointCloud<pcl::PointXYZ>::Ptr& qr_centers,
                       const Params& params)
@@ -273,6 +278,7 @@ void saveTargetHoleCenters(const pcl::PointCloud<pcl::PointXYZ>::Ptr& lidar_cent
     std::cout << BOLDGREEN << "[Record] Saved four pairs of target centers to " << BOLDWHITE << saveDir << "circle_center_record.txt" << RESET << std::endl;
 }
 
+// 保存单帧外参结果、彩色点云和 QR 检测图
 void saveCalibrationResults(const Params& params, const Eigen::Matrix4f& transformation, 
      const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& colored_cloud, const cv::Mat& img_input)
 {
@@ -329,6 +335,7 @@ void saveCalibrationResults(const Params& params, const Eigen::Matrix4f& transfo
   imwrite(outputDir + "qr_detect.png", img_input);
 }
 
+// 将 4 个标定板中心按固定顺序排序，支持 camera 和 lidar 坐标输入
 void sortPatternCenters(pcl::PointCloud<pcl::PointXYZ>::Ptr pc,
                         pcl::PointCloud<pcl::PointXYZ>::Ptr v,
                         const std::string& axis_mode = "camera") 
@@ -399,12 +406,14 @@ void sortPatternCenters(pcl::PointCloud<pcl::PointXYZ>::Ptr pc,
   }
 }
 
+// 计算两个三维点之间的欧氏距离
 double distance3D(const pcl::PointXYZ& p1, const pcl::PointXYZ& p2) {
   return std::sqrt(std::pow(p1.x - p2.x, 2) +
                    std::pow(p1.y - p2.y, 2) +
                    std::pow(p1.z - p2.z, 2));
 }
 
+// 用已知 4 圆心宽高和对角线距离输出几何质检误差
 void validateTargetGeometry(const pcl::PointCloud<pcl::PointXYZ>::Ptr& centers,
                             double target_width,
                             double target_height,
@@ -470,6 +479,7 @@ class Square
     float _target_width, _target_height, _target_diagonal;
  
   public:
+    // 构造 4 点几何校验器，并缓存候选中心的质心和目标尺寸
     Square(std::vector<pcl::PointXYZ> candidates, float width, float height) {
       _candidates = candidates;
       _target_width = width;
@@ -489,11 +499,13 @@ class Square
       _center.z /= candidates.size();
     }
  
+    // 计算两个候选点之间的距离
     float distance(pcl::PointXYZ pt1, pcl::PointXYZ pt2) {
       return sqrt(pow(pt1.x - pt2.x, 2) + pow(pt1.y - pt2.y, 2) +
                   pow(pt1.z - pt2.z, 2));
     }
  
+    // 按索引读取候选点
     pcl::PointXYZ at(int i) {
       assert(0 <= i && i < 4);
       return _candidates[i];
@@ -503,6 +515,7 @@ class Square
     // The original is_valid() was too rigid. This version is more robust by checking for two possible
     // orderings of the side lengths (width-height vs. height-width) after angular sorting.
     // ==================================================================================================
+    // 判断 4 个候选点是否满足标定板矩形中心几何关系
     bool is_valid() 
     {
       if (_candidates.size() != 4) return false;
