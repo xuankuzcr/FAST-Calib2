@@ -4,6 +4,11 @@
 
 FAST-Calib2 builds upon FAST-Calib as a substantially enhanced target-based extrinsic calibration toolbox for LiDAR-camera systems. It uses a reflective annular calibration target to improve LiDAR center extraction on **low-quality point clouds**, especially for **large-spot solid-state and mechanical LiDARs**.
 
+<p align="center">
+  <img src="./pics/cover.jpg" width="100%">
+  <font color=#a0a0a0 size=2>Mid360 calibration example.</font>
+</p>
+
 **Contributions:**
 
 1. A self-designed 3D reflective annular calibration target that avoids center extraction errors caused by hole-edge inflation and bleeding artifacts in previous circular-hole calibration boards.

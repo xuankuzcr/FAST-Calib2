@@ -1826,6 +1826,8 @@ private:
 public:
     ros::Publisher filtered_pub_;
     ros::Publisher plane_pub_;
+    ros::Publisher annulus_pub_;
+    ros::Publisher boundary_pub_;
     ros::Publisher aligned_pub_;
     ros::Publisher edge_pub_;
     ros::Publisher center_z0_pub_;
@@ -1861,6 +1863,8 @@ public:
 
         filtered_pub_ = nh.advertise<sensor_msgs::PointCloud2>("filtered_cloud", 1);
         plane_pub_ = nh.advertise<sensor_msgs::PointCloud2>("plane_cloud", 1);
+        annulus_pub_ = nh.advertise<sensor_msgs::PointCloud2>("annulus_cloud", 1);
+        boundary_pub_ = nh.advertise<sensor_msgs::PointCloud2>("boundary_cloud", 1);
         aligned_pub_ = nh.advertise<sensor_msgs::PointCloud2>("aligned_cloud", 1);
         edge_pub_ = nh.advertise<sensor_msgs::PointCloud2>("edge_cloud", 1);
         center_z0_pub_ = nh.advertise<sensor_msgs::PointCloud2>("center_z0_cloud", 10);

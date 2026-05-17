@@ -127,6 +127,16 @@ int main(int argc, char **argv)
         plane_cloud_msg.header = qr_centers_msg.header;
         lidarDetectPtr->plane_pub_.publish(plane_cloud_msg);
 
+        sensor_msgs::PointCloud2 annulus_cloud_msg;
+        pcl::toROSMsg(*lidarDetectPtr->getAnnulusOriginalCloud(), annulus_cloud_msg);
+        annulus_cloud_msg.header = qr_centers_msg.header;
+        lidarDetectPtr->annulus_pub_.publish(annulus_cloud_msg);
+
+        sensor_msgs::PointCloud2 boundary_cloud_msg;
+        pcl::toROSMsg(*lidarDetectPtr->getBoundaryOriginalCloud(), boundary_cloud_msg);
+        boundary_cloud_msg.header = qr_centers_msg.header;
+        lidarDetectPtr->boundary_pub_.publish(boundary_cloud_msg);
+
         sensor_msgs::PointCloud2 aligned_cloud_msg;
         pcl::toROSMsg(*lidarDetectPtr->getAlignedCloud(), aligned_cloud_msg);
         aligned_cloud_msg.header = qr_centers_msg.header;
