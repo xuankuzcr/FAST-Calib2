@@ -2,22 +2,23 @@
 
 ## LiDAR-Camera Extrinsic Calibration with Reflective Annular Targets
 
-FAST-Calib2 is a target-based extrinsic calibration toolbox for LiDAR-camera systems, such as [FAST-LIVO2](https://github.com/hku-mars/FAST-LIVO2). It uses a reflective annular calibration target to improve LiDAR center extraction on low-quality point clouds, especially for large-spot solid-state and hybrid solid-state LiDARs.
+FAST-Calib2 builds upon FAST-Calib as a substantially enhanced target-based extrinsic calibration toolbox for LiDAR-camera systems. It uses a reflective annular calibration target to improve LiDAR center extraction on **low-quality point clouds**, especially for **large-spot solid-state and mechanical LiDARs**.
 
 **Contributions:**
 
-1. A reflective annular calibration target that reduces center bias caused by streaking and inflated high-reflectivity returns.
+1. A self-designed 3D reflective annular calibration target that avoids center extraction errors caused by hole-edge inflation and bleeding artifacts in previous circular-hole calibration boards.
 2. A robust concentric-circle fitting method that uses the fixed inner and outer annulus radii as geometric constraints.
-3. LiDAR-type-specific center extraction pipelines for solid-state and mechanical LiDARs.
-4. Automatic calibration board ROI extraction without manual pass-through tuning.
-5. Geometry and radius quality checks for extracted annulus centers.
-6. Single-scene and multi-scene LiDAR-camera extrinsic calibration without initial extrinsic parameters.
+3. Automatic calibration board ROI extraction without manual pass-through tuning.
+4. Geometry and radius quality checks for extracted annulus centers.
+5. Single-scene and multi-scene LiDAR-camera extrinsic calibration without initial extrinsic parameters.
 
 **Related paper:**
 
 [FAST-Calib: LiDAR-Camera Extrinsic Calibration in One Second](https://www.arxiv.org/pdf/2507.17210)
 
-FAST-Calib2 extends FAST-Calib with a reflective annular target and LiDAR-type-specific annulus center extraction.
+[FAST-Calib2: LiDAR-Camera Extrinsic Calibration with Reflective Annular Targets](https://github.com/xuankuzcr/FAST-Calib2)
+
+📬 For further assistance or inquiries, please feel free to contact Chunran Zheng at zhengcr@connect.hku.hk.
 
 ## 1. Prerequisites
 
@@ -28,14 +29,17 @@ FAST-Calib2 extends FAST-Calib with a reflective annular target and LiDAR-type-s
 Build the package in a catkin workspace:
 
 ```bash
-cd ~/02_calib_ws
-catkin_make
-source devel/setup.bash
+cd ~/calib_ws && catkin_make && source devel/setup.bash
 ```
 
 ## 2. Calibration Target
 
 FAST-Calib2 uses four reflective annuli and four visual markers on one board. The annuli are used by LiDAR center extraction, while the visual markers are used by the camera pipeline.
+
+Materials:
+
+- Board: PVC
+- Reflective annulus stickers: 3M engineering-grade reflective film
 
 Key dimensions:
 
@@ -97,7 +101,21 @@ Typical multi-scene target placement:
   <font color=#a0a0a0 size=2>Placement of the calibration target for multi-scene data collection: (a) facing forward, (b) oriented to the right, (c) oriented to the left.</font>
 </p>
 
-## 5. LiDAR Center Test
+## 5. Configuration
+
+Main parameters are in `config/qr_params.yaml`:
+
+- `use_auto_lidar_roi`: enable automatic board ROI extraction
+- `circle_radius`: annulus centerline radius, default `0.12`
+- `annulus_half_width`: half of annulus ring width, default `0.025`
+- `delta_width_circles`: horizontal center spacing, default `0.5`
+- `delta_height_circles`: vertical center spacing, default `0.4`
+- `board_width`, `board_height`: physical board size
+
+## 6. Standalone LiDAR Center Extraction Test
+
+<details>
+<summary>Show Unit Test Usage</summary>
 
 The repository also provides a LiDAR-only test tool for checking annulus center extraction before running full camera-LiDAR calibration.
 
@@ -136,23 +154,4 @@ Debug PCD colors:
 - Solid-LiDAR boundary points: red
 - Centers: white spheres
 
-## 6. Configuration
-
-Main parameters are in `config/qr_params.yaml`:
-
-- `use_auto_lidar_roi`: enable automatic board ROI extraction
-- `circle_radius`: annulus centerline radius, default `0.12`
-- `annulus_half_width`: half of annulus ring width, default `0.025`
-- `delta_width_circles`: horizontal center spacing, default `0.5`
-- `delta_height_circles`: vertical center spacing, default `0.4`
-- `board_width`, `board_height`: physical board size
-- `annulus_voxel_leaf`: voxel size before annulus clustering and fitting
-
-## 7. Outputs
-
-Single-scene calibration outputs are saved in the configured `output_path`, including:
-
-- `single_calib_result.txt`: calibrated camera-LiDAR extrinsics
-- `colored_cloud.pcd`: LiDAR point cloud colored by the camera image
-- `qr_detect.png`: camera marker detection result
-- `circle_center_record.txt`: recorded LiDAR and camera target center pairs
+</details>
