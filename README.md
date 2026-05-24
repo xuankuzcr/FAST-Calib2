@@ -2,7 +2,7 @@
 
 ## LiDAR-Camera Extrinsic Calibration with Reflective Annular Targets
 
-FAST-Calib2 builds upon [FAST-Calib](https://github.com/hku-mars/FAST-Calib) as a substantially enhanced target-based extrinsic calibration toolbox for LiDAR-camera systems. It uses a reflective annular calibration target to improve LiDAR center extraction on **low-quality point clouds**, especially for **large-spot solid-state and mechanical LiDARs**.
+FAST-Calib2 extends [FAST-Calib](https://github.com/hku-mars/FAST-Calib) to LiDAR-camera modules that were previously hard to calibrate due to **low-quality point clouds**. With a custom-designed reflective annular calibration target, it enables robust center extraction on **large-spot solid-state and mechanical LiDARs**, including Mid360, Avia, Ouster, XT32, JT128, Airy, E1R, and Adaps Photonics Spad LiDAR.
 
 **Key highlights include:**
 
@@ -44,27 +44,27 @@ Both LiDAR pipelines first **locate the calibration board automatically**, fit t
 Solid-state LiDAR pipeline:
 
 1. Extract high-reflectivity annulus points on the fitted board plane.
-2. Cluster annulus points into circle candidates.
+2. Cluster the extracted annulus points.
 3. Fit robust single circles as the default center estimate.
-4. Optionally extract annulus boundary points and fit fixed-radius concentric circles.
-5. Select the result with better four-center geometry consistency.
+4. Optionally extract annulus boundary points and fit fixed inner/outer radius concentric circles.
+5. Select the best result by checking four-center geometry consistency against the known target geometry.
 
 Mechanical LiDAR pipeline:
 
 1. Use LiDAR `ring` order to find intensity transition points on the annulus boundary.
 2. Try both interpolated boundary points and high-reflectivity-side boundary points.
-3. Fit fixed inner/outer radius concentric circles for each annulus cluster.
-4. Select four centers using the known 500 mm x 400 mm target geometry.
-5. Keep the boundary mode with lower geometry error.
+3. Cluster the extracted boundary points.
+4. Fit fixed inner/outer radius concentric circles.
+5. Select the best result by checking four-center geometry consistency against the known target geometry.
 
 The final quality checks include center-to-center geometry error and annulus radius consistency.
 
 ## 4. Run Examples
 
-Prepare static acquisition data in the `calib_data` folder:
+Prepare static acquisition data in the `calib_data` folder (Download the example data from [Google Drive](https://drive.google.com/drive/folders/1VnMCsGj3Gat7dxe6IION0SfS7jYNMw1g?usp=sharing)):
 
 - rosbag containing point cloud messages
-- corresponding image for camera-LiDAR calibration
+- corresponding image
 
 Run single-scene calibration:
 
