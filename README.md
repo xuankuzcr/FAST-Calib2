@@ -33,9 +33,14 @@ Materials:
 - Reflective annulus stickers: 3M engineering-grade reflective film
 
 <p align="center">
-  <img src="./pics/new_target.png" width="100%">
+  <img src="./pics/FAST-Calib2-board.png" width="100%">
   <font color=#a0a0a0 size=2>Reflective annular calibration target and annotated dimensions.</font>
 </p>
+
+DIY Calibration Target Tips:
+
+1. Fabricate the board based on the schematic. Ensure a minimum thickness of 1 cm to avoid bending.
+2. Apply reflective annulus stickers to the designated ring positions on the fabricated board.
 
 ## 3. Method Overview
 
